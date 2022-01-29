@@ -55,19 +55,20 @@ namespace DarkBot_NoLol
                     Log(LogSeverity.Info, $"{user.Id} = {user.Username}#{user.Discriminator} is quit LoL");
                 }
             }
-            if (playingLoL)
+            if (playingLoL && !shameList.ContainsKey(user.Id))
             {
                 if (!userStartTime.ContainsKey(user.Id))
                 {
                     userStartTime[user.Id] = DateTime.UtcNow.Ticks;
                     Log(LogSeverity.Info, $"{user.Id} = {user.Username}#{user.Discriminator} is playing LoL");
-                }                
+                }
             }
             return Task.CompletedTask;
         }
 
         private async void Looper()
         {
+            List<ulong> removeList = new List<ulong>();
             while (true)
             {
                 foreach (KeyValuePair<ulong, long> user in userStartTime)
@@ -75,6 +76,7 @@ namespace DarkBot_NoLol
                     long elapsedTime = DateTime.UtcNow.Ticks - user.Value;
                     if (elapsedTime > maxTime)
                     {
+                        removeList.Add(user.Key);
                         await ShameUser(user.Key);
                     }
                     else
@@ -82,6 +84,14 @@ namespace DarkBot_NoLol
                         long timeLeft = 30 - (elapsedTime / TimeSpan.TicksPerMinute);
                         Log(LogSeverity.Info, $"{timeLeft} minutes left to shame {user.Key}");
                     }
+                }
+                if (removeList.Count > 0)
+                {
+                    foreach (ulong removeID in removeList)
+                    {
+                        userStartTime.Remove(removeID);
+                    }
+                    removeList.Clear();
                 }
                 await Task.Delay(60000);
             }
@@ -141,7 +151,7 @@ namespace DarkBot_NoLol
                 }
                 if (selectedChannelBackup != null)
                 {
-                    if (selectedChannel.GetUser(user) != null)
+                    if (selectedChannelBackup.GetUser(user) != null)
                     {
                         Log(LogSeverity.Info, $"<@{user}> has been added to the LoL hall of shame for playing more than half an hour!");
                         await selectedChannelBackup.SendMessageAsync("<@{user}> has been added to the LoL hall of shame for playing more than half an hour!");
