@@ -154,7 +154,7 @@ namespace DarkBot_NoLol
                     if (selectedChannelBackup.GetUser(user) != null)
                     {
                         Log(LogSeverity.Info, $"<@{user}> has been added to the LoL hall of shame for playing more than half an hour!");
-                        await selectedChannelBackup.SendMessageAsync("<@{user}> has been added to the LoL hall of shame for playing more than half an hour!");
+                        await selectedChannelBackup.SendMessageAsync($"<@{user}> has been added to the LoL hall of shame for playing more than half an hour!");
                     }
                 }
             }
